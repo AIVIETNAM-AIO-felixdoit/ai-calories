@@ -45,13 +45,23 @@ class AppScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-          children: [
-            if (topBar != null) ...[topBar!, const SizedBox(height: 28)],
-            ...children,
-          ],
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF3EEDF), AppColors.background],
+            stops: [0, 0.4],
+          ),
+        ),
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(22, 14, 22, 32),
+            children: [
+              if (topBar != null) ...[topBar!, const SizedBox(height: 22)],
+              ...children,
+            ],
+          ),
         ),
       ),
     );
@@ -75,15 +85,25 @@ class AppTopBar extends StatelessWidget {
     return Row(
       children: [
         if (showBack) ...[
-          InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => Navigator.of(context).maybePop(),
-            child: const Padding(
-              padding: EdgeInsets.all(2),
-              child: Icon(Icons.chevron_left, color: AppColors.ink, size: 26),
+          Material(
+            color: AppColors.surface,
+            shape: const CircleBorder(),
+            elevation: 1,
+            shadowColor: const Color(0x33245D44),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => Navigator.of(context).maybePop(),
+              child: const Padding(
+                padding: EdgeInsets.all(7),
+                child: Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.ink,
+                  size: 20,
+                ),
+              ),
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 10),
         ],
         const Text(
           'AI Calories',
@@ -91,6 +111,7 @@ class AppTopBar extends StatelessWidget {
         ),
         const Spacer(),
         PillBadge(
+          color: AppColors.surface,
           label: actionLabel,
           onTap: onAction ??
               () => pushScreen(context, const ProfileScreen(fromSettings: true)),
@@ -209,6 +230,7 @@ class PrimaryButton extends StatelessWidget {
       leading: leading,
       background: AppColors.primary,
       foreground: Colors.white,
+      gradientEnd: AppColors.primaryDark,
     );
   }
 }
@@ -230,8 +252,9 @@ class AccentButton extends StatelessWidget {
       label: label,
       onPressed: onPressed,
       leading: false,
-      background: AppColors.bright,
-      foreground: Colors.white,
+      background: AppColors.lime,
+      foreground: AppColors.ink,
+      gradientEnd: AppColors.limeDeep,
     );
   }
 }
@@ -316,6 +339,7 @@ class _BaseButton extends StatelessWidget {
     required this.background,
     required this.foreground,
     this.border = false,
+    this.gradientEnd,
   });
 
   final String label;
@@ -325,28 +349,54 @@ class _BaseButton extends StatelessWidget {
   final Color foreground;
   final bool border;
 
+  /// Có giá trị thì nút dùng gradient và đổ bóng cùng tông màu.
+  final Color? gradientEnd;
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          backgroundColor: background,
-          foregroundColor: foreground,
-          alignment: leading ? Alignment.centerLeft : Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 18),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: border
-                ? const BorderSide(color: AppColors.border)
-                : BorderSide.none,
-          ),
+    final radius = BorderRadius.circular(20);
+    final enabled = onPressed != null;
+
+    return Opacity(
+      opacity: enabled ? 1 : 0.5,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: radius,
+          border: border ? Border.all(color: AppColors.border) : null,
+          gradient: gradientEnd == null
+              ? null
+              : LinearGradient(colors: [background, gradientEnd!]),
+          boxShadow: gradientEnd == null
+              ? null
+              : [
+                  BoxShadow(
+                    color: background.withValues(alpha: 0.32),
+                    blurRadius: 16,
+                    offset: const Offset(0, 7),
+                  ),
+                ],
         ),
-        child: Text(
-          label,
-          style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w600),
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            borderRadius: radius,
+            onTap: onPressed,
+            child: Container(
+              height: 56,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              alignment: leading ? Alignment.centerLeft : Alignment.center,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.w700,
+                  color: foreground,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -380,9 +430,9 @@ class AppCard extends StatelessWidget {
         boxShadow: isWhite
             ? const [
                 BoxShadow(
-                  color: Color(0x14245D44),
-                  blurRadius: 18,
-                  offset: Offset(0, 6),
+                  color: Color(0x1A245D44),
+                  blurRadius: 24,
+                  offset: Offset(0, 10),
                 ),
               ]
             : null,
@@ -494,12 +544,47 @@ class GreenCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF17513D), AppColors.primaryDark],
+        ),
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x400F3D2E),
+            blurRadius: 24,
+            offset: Offset(0, 12),
+          ),
+        ],
       ),
-      child: child,
+      child: Stack(
+        children: [
+          const Positioned(right: -36, top: -46, child: _Halo(size: 150)),
+          const Positioned(right: 54, bottom: -58, child: _Halo(size: 110)),
+          Padding(padding: const EdgeInsets.all(20), child: child),
+        ],
+      ),
+    );
+  }
+}
+
+class _Halo extends StatelessWidget {
+  const _Halo({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color(0x14FFFFFF),
+      ),
     );
   }
 }
@@ -670,7 +755,15 @@ class MealTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             child: showImage
                 ? Image.asset(foodImage, width: 60, height: 60, fit: BoxFit.cover)
-                : Container(width: 60, height: 60, color: AppColors.soft),
+                : Container(
+                    width: 60,
+                    height: 60,
+                    color: AppColors.soft,
+                    child: const Icon(
+                      Icons.ramen_dining_rounded,
+                      color: AppColors.primary,
+                    ),
+                  ),
           ),
           const SizedBox(width: 14),
           Expanded(

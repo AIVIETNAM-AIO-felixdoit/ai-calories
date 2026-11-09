@@ -17,13 +17,12 @@ class ProfileScreen extends StatelessWidget {
           title: 'Bắt đầu từ bạn',
           subtitle: 'Một vài thông tin để tạo kế hoạch phù hợp.',
         ),
-        const StepBadge('BƯỚC 1 / 3'),
-        const ValueCard(label: 'Chiều cao', value: '172 cm'),
+        const StepBadge('BƯỚC 1 / 3'),        const ValueCard(label: 'Chiều cao', value: '172 cm'),
         const ValueCard(label: 'Cân nặng hiện tại', value: '72 kg'),
         const ValueCard(label: 'Tuổi · Giới tính sinh học', value: '21 tuổi · Nam'),
         const ValueCard(
           label: 'Mức vận động thường ngày',
-          value: 'Vừa phải · (3–4 buổi/tuần)',
+          value: 'Vừa phải · 3–4 buổi/tuần',
         ),
         const Caption(
           'Thông tin giúp ước tính nhu cầu năng lượng. '

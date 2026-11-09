@@ -169,7 +169,7 @@ class _RouteMapPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    canvas.drawRect(Offset.zero & size, Paint()..color = AppColors.soft);
+    canvas.drawRect(Offset.zero & size, Paint()..color = AppColors.chip);
 
     final road = Paint()
       ..color = Colors.white

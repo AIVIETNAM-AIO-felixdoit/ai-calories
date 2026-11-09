@@ -49,7 +49,7 @@ class ActivityScreen extends StatelessWidget {
               const SizedBox(height: 14),
               const AppProgressBar(
                 value: _steps / _stepGoal,
-                color: AppColors.accent,
+                color: AppColors.lime,
                 background: Color(0xFFEAF0E5),
               ),
               const SizedBox(height: 14),

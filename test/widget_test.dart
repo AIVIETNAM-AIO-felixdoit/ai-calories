@@ -12,19 +12,15 @@ void main() {
     await tester.pumpWidget(const AiCaloriesApp());
     expect(find.text('Ăn uống có mục tiêu.\nTheo dõi dễ dàng.'), findsOneWidget);
 
-    await tester.scrollUntilVisible(find.text('Khám phá trang chủ'), 200);
     await tester.tap(find.text('Khám phá trang chủ'));
     await tester.pumpAndSettle();
     expect(find.text('Chào Giang,'), findsOneWidget);
-    expect(find.text('1.500 kcal'), findsOneWidget);
+    expect(find.text('1.500'), findsOneWidget);
 
     // Lưu bữa trưa qua màn chi tiết: còn lại 2.100 - 1.250 = 850 kcal.
-    await tester.scrollUntilVisible(find.text('+  Chụp / tải bữa ăn'), 200);
-    await tester.ensureVisible(find.text('+  Chụp / tải bữa ăn'));
+    await tester.tap(find.byKey(const ValueKey('camera-button')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('+  Chụp / tải bữa ăn'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('+  Chụp ảnh bữa ăn'));
+    await tester.tap(find.byKey(const ValueKey('shutter')));
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pumpAndSettle();
     expect(find.text('Kiểm tra bữa ăn'), findsOneWidget);
@@ -36,7 +32,7 @@ void main() {
     await tester.tap(find.text('Lưu vào nhật ký'));
     await tester.pumpAndSettle();
 
-    expect(find.text('850 kcal'), findsOneWidget);
+    expect(find.text('850'), findsOneWidget);
   });
 
   testWidgets('Thêm nước cập nhật tổng lượng nước', (tester) async {
@@ -45,14 +41,17 @@ void main() {
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(const AiCaloriesApp());
-    await tester.scrollUntilVisible(find.text('Khám phá trang chủ'), 200);
     await tester.tap(find.text('Khám phá trang chủ'));
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(find.text('+  Thêm 250 ml'), 200);
-    await tester.ensureVisible(find.text('+  Thêm 250 ml'));
+    await tester.scrollUntilVisible(
+      find.text('+ 250 ml'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(find.text('+ 250 ml'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('+  Thêm 250 ml'));
+    await tester.tap(find.text('+ 250 ml'));
     await tester.pumpAndSettle();
     expect(find.text('1.500 ml'), findsOneWidget);
     expect(find.text('Còn 500 ml tới mục tiêu.'), findsOneWidget);

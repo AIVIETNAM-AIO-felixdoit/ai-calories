@@ -18,8 +18,7 @@ class PlanScreen extends StatelessWidget {
           title: 'Kế hoạch dành cho bạn',
           subtitle: 'Từng bữa ăn nhỏ, tiến gần mục tiêu lớn.',
         ),
-        const StepBadge('BƯỚC 3 / 3'),
-        GreenCard(
+        const StepBadge('BƯỚC 3 / 3'),        GreenCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

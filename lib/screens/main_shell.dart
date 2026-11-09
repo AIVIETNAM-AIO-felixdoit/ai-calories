@@ -7,6 +7,7 @@ import 'activity_screen.dart';
 import 'articles_screen.dart';
 import 'home_screen.dart';
 import 'progress_screen.dart';
+import 'scan_screen.dart';
 
 const tabHome = 0;
 const tabActivity = 1;
@@ -36,6 +37,7 @@ class MainShell extends StatelessWidget {
     final state = AppScope.of(context);
 
     return Scaffold(
+      extendBody: true,
       body: IndexedStack(
         index: state.currentTab,
         children: const [
@@ -50,6 +52,7 @@ class MainShell extends StatelessWidget {
         child: AppBottomNav(
           currentIndex: state.currentTab,
           onTap: state.selectTab,
+          onCamera: () => pushScreen(context, const ScanScreen()),
         ),
       ),
     );

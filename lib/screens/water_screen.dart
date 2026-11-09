@@ -39,8 +39,8 @@ class WaterScreen extends StatelessWidget {
               const SizedBox(height: 14),
               AppProgressBar(
                 value: state.waterMl / AppState.waterGoal,
-                color: AppColors.primary,
-                background: AppColors.chip,
+                color: AppColors.waterDeep,
+                background: AppColors.surface,
               ),
               const SizedBox(height: 14),
               Text(
