@@ -54,9 +54,17 @@ class AppScreen extends StatelessWidget {
             stops: [0, 0.4],
           ),
         ),
+        // Chỉ chừa tai thỏ phía trên; phía dưới cho nội dung cuộn qua vạch home
+        // (iPhone) / thanh điều hướng, rồi cộng phần đó vào padding cuối danh sách.
         child: SafeArea(
+          bottom: false,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(22, 14, 22, 32),
+            padding: EdgeInsets.fromLTRB(
+              22,
+              14,
+              22,
+              32 + MediaQuery.paddingOf(context).bottom,
+            ),
             children: [
               if (topBar != null) ...[topBar!, const SizedBox(height: 22)],
               ...children,
