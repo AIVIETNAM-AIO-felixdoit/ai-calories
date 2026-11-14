@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../services/photo_picker.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common.dart';
 import 'confirm_screen.dart';
@@ -8,9 +10,23 @@ import 'confirm_screen.dart';
 class ScanScreen extends StatelessWidget {
   const ScanScreen({super.key});
 
-  /// Giả lập AI nhận diện món ăn rồi chuyển sang màn kiểm tra.
-  Future<void> _analyze(BuildContext context) async {
+  /// Chụp/chọn ảnh, gửi lên backend nhận diện rồi chuyển sang màn kiểm tra.
+  Future<void> _analyze(BuildContext context, {required bool camera}) async {
+    final state = AppScope.read(context);
     final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    final PickedPhoto? photo;
+    try {
+      photo = await state.photoPicker(camera: camera);
+    } catch (_) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Không mở được camera / thư viện ảnh')),
+      );
+      return;
+    }
+    if (photo == null || !context.mounted) return;
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -27,11 +43,20 @@ class ScanScreen extends StatelessWidget {
         ),
       ),
     );
-    await Future<void>.delayed(const Duration(milliseconds: 1400));
-    navigator.pop();
-    navigator.push(
-      MaterialPageRoute<void>(builder: (_) => const ConfirmScreen()),
-    );
+    try {
+      final predictions =
+          await state.api.predict(photo.bytes, filename: photo.filename);
+      navigator.pop();
+      navigator.push(
+        MaterialPageRoute<void>(
+          builder: (_) =>
+              ConfirmScreen(photo: photo!.bytes, predictions: predictions),
+        ),
+      );
+    } catch (error) {
+      navigator.pop();
+      messenger.showSnackBar(SnackBar(content: Text('$error')));
+    }
   }
 
   @override
@@ -117,11 +142,11 @@ class ScanScreen extends StatelessWidget {
                         _SideAction(
                           icon: Icons.photo_library_rounded,
                           label: 'Thư viện',
-                          onTap: () => _analyze(context),
+                          onTap: () => _analyze(context, camera: false),
                         ),
                         GestureDetector(
                           key: const ValueKey('shutter'),
-                          onTap: () => _analyze(context),
+                          onTap: () => _analyze(context, camera: true),
                           child: Container(
                             width: 84,
                             height: 84,

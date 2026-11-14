@@ -76,11 +76,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
         if (!isToday)
           const Caption('Bản demo chỉ có dữ liệu chi tiết cho hôm nay (29/10).')
         else ...[
-          if (state.lunchSaved) ...[
+          for (final meal in state.meals.reversed) ...[
             MealTile(
-              title: 'Cơm gà & rau xanh',
-              subtitle: '12:30 · Đã xác nhận',
-              onTap: () => pushScreen(context, const DetailScreen()),
+              title: meal.title,
+              subtitle: '${meal.time} · Đã xác nhận',
+              kcal: meal.kcal,
+              photo: meal.photo,
+              onTap: () => pushScreen(context, DetailScreen(meal: meal)),
             ),
             const SizedBox(height: 12),
           ],

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../screens/profile_screen.dart';
@@ -520,24 +522,34 @@ class MacroChip extends StatelessWidget {
 
 /// Hàng 3 ô dinh dưỡng của bữa cơm gà, dùng ở chi tiết, chia sẻ, xuất ảnh.
 class MealMacros extends StatelessWidget {
-  const MealMacros({super.key, this.labelOnTop = true, this.carbLabel = 'TINH BỘT'});
+  const MealMacros({
+    super.key,
+    this.labelOnTop = true,
+    this.carbLabel = 'TINH BỘT',
+    this.protein = '42 g',
+    this.carbs = '74 g',
+    this.fat = '21 g',
+  });
 
   final bool labelOnTop;
   final String carbLabel;
+  final String protein;
+  final String carbs;
+  final String fat;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        MacroChip(value: '42 g', label: labelOnTop ? 'ĐẠM' : 'Đạm', labelOnTop: labelOnTop),
+        MacroChip(value: protein, label: labelOnTop ? 'ĐẠM' : 'Đạm', labelOnTop: labelOnTop),
         const SizedBox(width: 8),
         MacroChip(
-          value: '74 g',
+          value: carbs,
           label: labelOnTop ? carbLabel : 'Tinh bột',
           labelOnTop: labelOnTop,
         ),
         const SizedBox(width: 8),
-        MacroChip(value: '21 g', label: labelOnTop ? 'BÉO' : 'Chất béo', labelOnTop: labelOnTop),
+        MacroChip(value: fat, label: labelOnTop ? 'BÉO' : 'Chất béo', labelOnTop: labelOnTop),
       ],
     );
   }
@@ -690,21 +702,26 @@ class Caption extends StatelessWidget {
 }
 
 class FoodImage extends StatelessWidget {
-  const FoodImage({super.key, this.height = 190, this.radius = 24});
+  const FoodImage({super.key, this.height = 190, this.radius = 24, this.bytes});
 
   final double height;
   final double radius;
+
+  /// Ảnh người dùng chụp; null thì dùng ảnh mẫu.
+  final Uint8List? bytes;
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
-      child: Image.asset(
-        foodImage,
-        height: height,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      ),
+      child: bytes != null
+          ? Image.memory(bytes!, height: height, width: double.infinity, fit: BoxFit.cover)
+          : Image.asset(
+              foodImage,
+              height: height,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
     );
   }
 }
@@ -743,6 +760,7 @@ class MealTile extends StatelessWidget {
     required this.subtitle,
     this.kcal,
     this.showImage = true,
+    this.photo,
     this.onTap,
   });
 
@@ -750,6 +768,7 @@ class MealTile extends StatelessWidget {
   final String subtitle;
   final int? kcal;
   final bool showImage;
+  final Uint8List? photo;
   final VoidCallback? onTap;
 
   @override
@@ -761,7 +780,9 @@ class MealTile extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: showImage
+            child: photo != null
+                ? Image.memory(photo!, width: 60, height: 60, fit: BoxFit.cover)
+                : showImage
                 ? Image.asset(foodImage, width: 60, height: 60, fit: BoxFit.cover)
                 : Container(
                     width: 60,

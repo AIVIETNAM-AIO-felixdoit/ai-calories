@@ -1,4 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/widgets.dart';
+
+import '../services/api_client.dart';
+import '../services/photo_picker.dart';
 
 enum Goal { lose, gain, healthy }
 
@@ -76,6 +81,24 @@ class WaterEntry {
   final bool justAdded;
 }
 
+/// Bữa ăn đã xác nhận qua AI + tính dinh dưỡng từ backend.
+class LoggedMeal {
+  const LoggedMeal({
+    required this.title,
+    required this.time,
+    required this.nutrition,
+    this.photo,
+  });
+
+  final String title;
+  final String time;
+  final NutritionResult nutrition;
+  final Uint8List? photo;
+
+  /// kcal làm tròn; null nếu backend thiếu dữ liệu năng lượng.
+  int? get kcal => nutrition.energy?.amount?.round();
+}
+
 class RunRecord {
   const RunRecord(this.label, this.km, this.minutes, this.pace, this.kcal);
 
@@ -88,14 +111,20 @@ class RunRecord {
 
 /// Trạng thái demo của cả app, giữ trong bộ nhớ.
 class AppState extends ChangeNotifier {
+  AppState({AiCaloriesApi? api, PhotoPicker? photoPicker})
+      : api = api ?? AiCaloriesApi(),
+        photoPicker = photoPicker ?? pickPhoto;
+
+  /// Client backend nhận diện món ăn; test truyền bản giả vào.
+  final AiCaloriesApi api;
+  final PhotoPicker photoPicker;
   static const breakfastKcal = 600;
-  static const lunchKcal = 650;
   static const waterGoal = 2000;
   static const _otherActivityKcal = 80;
 
   Goal goal = Goal.lose;
   int currentTab = 0;
-  bool lunchSaved = false;
+  final List<LoggedMeal> meals = [];
   bool articleSaved = false;
   bool ptInvited = false;
 
@@ -110,7 +139,9 @@ class AppState extends ChangeNotifier {
   ];
 
   GoalPlan get plan => goalPlans[goal]!;
-  int get consumed => breakfastKcal + (lunchSaved ? lunchKcal : 0);
+  bool get lunchSaved => meals.isNotEmpty;
+  int get consumed =>
+      breakfastKcal + meals.fold(0, (sum, m) => sum + (m.kcal ?? 0));
   int get remaining => plan.kcal - consumed;
   int get waterMl => waterEntries.fold(0, (sum, e) => sum + e.ml);
   int get activityKcal =>
@@ -127,10 +158,12 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void saveLunch() {
-    lunchSaved = true;
+  void logMeal(LoggedMeal meal) {
+    meals.add(meal);
     notifyListeners();
   }
+
+  bool isLogged(LoggedMeal meal) => meals.contains(meal);
 
   void addWater([int ml = 250]) {
     final now = DateTime.now();

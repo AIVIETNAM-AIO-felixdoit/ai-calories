@@ -66,5 +66,14 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Chụp ảnh món ăn để AI nhận diện và ước tính dinh dưỡng.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Chọn ảnh món ăn có sẵn để AI nhận diện.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

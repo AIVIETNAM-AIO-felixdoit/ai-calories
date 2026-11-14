@@ -84,15 +84,17 @@ class HomeScreen extends StatelessWidget {
                   kcal: AppState.breakfastKcal,
                 ),
                 const SizedBox(width: 12),
-                if (state.lunchSaved)
+                for (final meal in state.meals) ...[
                   _MealCard(
-                    slot: 'Bữa trưa · 12:30',
-                    title: 'Cơm gà & rau xanh',
-                    kcal: AppState.lunchKcal,
-                    image: foodImage,
-                    onTap: () => pushScreen(context, const DetailScreen()),
-                  )
-                else
+                    slot: 'Đã ghi · ${meal.time}',
+                    title: meal.title,
+                    kcal: meal.kcal,
+                    photo: meal.photo,
+                    onTap: () => pushScreen(context, DetailScreen(meal: meal)),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                if (!state.lunchSaved)
                   _AddMealCard(
                     slot: 'Bữa trưa',
                     onTap: () => pushScreen(context, const ScanScreen()),
@@ -573,14 +575,14 @@ class _MealCard extends StatelessWidget {
     required this.slot,
     required this.title,
     required this.kcal,
-    this.image,
+    this.photo,
     this.onTap,
   });
 
   final String slot;
   final String title;
-  final int kcal;
-  final String? image;
+  final int? kcal;
+  final Uint8List? photo;
   final VoidCallback? onTap;
 
   @override
@@ -594,8 +596,8 @@ class _MealCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (image != null)
-                Image.asset(image!, fit: BoxFit.cover)
+              if (photo != null)
+                Image.memory(photo!, fit: BoxFit.cover)
               else
                 const DecoratedBox(
                   decoration: BoxDecoration(
@@ -627,7 +629,7 @@ class _MealCard extends StatelessWidget {
                 top: 10,
                 left: 10,
                 child: PillBadge(
-                  label: '$kcal kcal',
+                  label: kcal == null ? '— kcal' : '$kcal kcal',
                   color: AppColors.lime,
                   textColor: AppColors.ink,
                 ),

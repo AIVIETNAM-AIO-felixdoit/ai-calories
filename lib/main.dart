@@ -9,18 +9,21 @@ void main() {
 }
 
 class AiCaloriesApp extends StatefulWidget {
-  const AiCaloriesApp({super.key});
+  const AiCaloriesApp({super.key, this.state});
+
+  /// Test truyền state có API giả; mặc định tạo mới.
+  final AppState? state;
 
   @override
   State<AiCaloriesApp> createState() => _AiCaloriesAppState();
 }
 
 class _AiCaloriesAppState extends State<AiCaloriesApp> {
-  final _state = AppState();
+  late final AppState _state = widget.state ?? AppState();
 
   @override
   void dispose() {
-    _state.dispose();
+    if (widget.state == null) _state.dispose();
     super.dispose();
   }
 

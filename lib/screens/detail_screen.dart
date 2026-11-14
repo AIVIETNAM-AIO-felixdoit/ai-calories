@@ -1,59 +1,87 @@
 import 'package:flutter/material.dart';
 
+import '../services/api_client.dart';
 import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common.dart';
-import 'confirm_screen.dart';
 import 'share_screen.dart';
 
 class DetailScreen extends StatelessWidget {
-  const DetailScreen({super.key});
+  const DetailScreen({super.key, required this.meal});
+
+  final LoggedMeal meal;
+
+  /// null nghĩa là thiếu dữ liệu: không hiển thị thành 0.
+  static String _amount(Nutrient? n) {
+    final value = n?.amount;
+    if (value == null) return '—';
+    final text = value >= 10 ? value.round().toString() : value.toStringAsFixed(1);
+    return n!.complete ? '$text ${n.unit}' : '≥$text ${n.unit}';
+  }
 
   @override
   Widget build(BuildContext context) {
     final state = AppScope.of(context);
+    final saved = state.isLogged(meal);
+    final nutrition = meal.nutrition;
+    final energy = nutrition.energy;
+    final incomplete = nutrition.nutrients.values
+        .where((n) => !n.complete)
+        .map((n) => n.name)
+        .toList();
 
     return AppScreen(
       children: [
-        const ScreenHeader(
+        ScreenHeader(
           title: 'Chi tiết bữa ăn',
-          subtitle: 'Bữa trưa · 29/10/2026 · 12:30',
+          subtitle: 'Hôm nay · ${meal.time} · ${nutrition.totalGrams.round()} g',
         ),
         const SizedBox(height: 20),
-        const FoodImage(height: 190),
+        FoodImage(height: 190, bytes: meal.photo),
         const SizedBox(height: 22),
-        const Text(
-          'Cơm gà & rau xanh',
-          style: TextStyle(
+        Text(
+          meal.title,
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
             color: AppColors.ink,
           ),
         ),
         const SizedBox(height: 18),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '650 kcal',
+                meal.kcal == null ? 'Chưa đủ dữ liệu kcal' : '${formatNumber(meal.kcal!)} kcal',
                 style: TextStyle(
-                  fontSize: 38,
+                  fontSize: meal.kcal == null ? 24 : 38,
                   fontWeight: FontWeight.w800,
                   color: AppColors.ink,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                'Ước tính theo khẩu phần đã xác nhận',
-                style: TextStyle(fontSize: 12, color: AppColors.primary),
+                energy != null && !energy.complete
+                    ? 'Thiếu dữ liệu năng lượng của một số thành phần'
+                    : 'Ước tính theo khẩu phần đã xác nhận',
+                style: const TextStyle(fontSize: 12, color: AppColors.primary),
               ),
-              SizedBox(height: 10),
-              MealMacros(labelOnTop: false),
+              const SizedBox(height: 10),
+              MealMacros(
+                labelOnTop: false,
+                protein: _amount(nutrition.protein),
+                carbs: _amount(nutrition.carbs),
+                fat: _amount(nutrition.fat),
+              ),
             ],
           ),
         ),
+        if (incomplete.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          Caption('Chưa đủ dữ liệu: ${incomplete.join(', ')}.'),
+        ],
         const SizedBox(height: 18),
         const Text(
           'Đã xác nhận thành phần • Có thể chỉnh sửa',
@@ -64,7 +92,7 @@ class DetailScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        if (state.lunchSaved)
+        if (saved)
           const AppCard(
             color: AppColors.soft,
             child: Text(
@@ -81,8 +109,8 @@ class DetailScreen extends StatelessWidget {
           AccentButton(
             label: 'Lưu vào nhật ký',
             onPressed: () {
-              state.saveLunch();
-              showToast(context, 'Đã lưu bữa trưa vào nhật ký');
+              state.logMeal(meal);
+              showToast(context, 'Đã lưu ${meal.title} vào nhật ký');
               popToRoot(context);
             },
           ),
@@ -91,11 +119,13 @@ class DetailScreen extends StatelessWidget {
           label: 'Xuất / gửi kết quả',
           onPressed: () => pushScreen(context, const ShareScreen()),
         ),
-        const SizedBox(height: 12),
-        TertiaryButton(
-          label: 'Sửa thành phần',
-          onPressed: () => pushScreen(context, const ConfirmScreen()),
-        ),
+        if (!saved) ...[
+          const SizedBox(height: 12),
+          TertiaryButton(
+            label: 'Sửa thành phần',
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+        ],
       ],
     );
   }
